@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { images } from '../data/images'
 
 interface Props {
   name: string
@@ -9,15 +10,18 @@ interface Props {
 }
 
 export default function Img({ name, alt, className = '', eager = false, fallback }: Props) {
-  const [src, setSrc] = useState(`/images/${name}.jpg`)
+  const remote = images[name] ?? (fallback ? images[fallback] : undefined)
+  const sources = [`/images/${name}.jpg`, ...(remote ? [remote] : []), `/images/${fallback ?? name}.svg`]
+  const [step, setStep] = useState(0)
   return (
     <img
-      src={src}
+      src={sources[step]}
       alt={alt}
       loading={eager ? 'eager' : 'lazy'}
       decoding="async"
+      referrerPolicy="no-referrer"
       className={className}
-      onError={() => setSrc(`/images/${fallback ?? name}.svg`)}
+      onError={() => setStep((n) => Math.min(n + 1, sources.length - 1))}
     />
   )
 }
